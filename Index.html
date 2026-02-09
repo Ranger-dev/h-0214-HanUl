@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>For You</title>
+  <style>
+    :root{
+      --pink:#c63e77;
+      --pinkSoft:#f6d3e2;
+      --black:#0f0f0f;
+      --deep:#3b1025;
+      --card:#ffffff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      background:
+        radial-gradient(900px 600px at 20% 15%, rgba(198,62,119,.14), transparent 60%),
+        radial-gradient(900px 600px at 80% 85%, rgba(198,62,119,.12), transparent 55%),
+        #fff;
+      font-family: ui-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      color:var(--black);
+      overflow-x:hidden;
+    }
+    .wrap{width:min(820px,92vw); padding:24px 0;}
+    .card{
+      background:var(--card);
+      border:2px solid rgba(198,62,119,.35);
+      border-radius:22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.07);
+      overflow:hidden;
+      position:relative;
+    }
+    .topbar{
+      padding:18px 18px 14px;
+      background: linear-gradient(90deg, rgba(246,211,226,.9), rgba(255,255,255,1));
+      border-bottom:1px solid rgba(198,62,119,.25);
+    }
+    .badge{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid rgba(198,62,119,.25);
+      color:var(--deep);
+      font-size:13px;
+    }
+    .heart{color:var(--pink)}
+    .content{padding:18px 18px 20px;}
+    h1{
+      margin:10px 0 6px;
+      color:var(--pink);
+      font-size:28px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:0 0 14px;
+      color:rgba(15,15,15,.75);
+      font-size:15px;
+      line-height:1.5;
+    }
+    .divider{
+      height:10px;
+      margin:12px 0 16px;
+      position:relative;
+    }
+    .divider:before{
+      content:"";
+      position:absolute; inset:0;
+      height:2px; top:4px;
+      background: linear-gradient(90deg, transparent, rgba(198,62,119,.55), transparent);
+      border-radius:99px;
+    }
+
+    .panel{
+      border:1px solid rgba(198,62,119,.22);
+      border-radius:18px;
+      padding:14px;
+      background: rgba(246,211,226,.25);
+    }
+    .row{
+      display:flex; flex-wrap:wrap; gap:10px;
+      margin-top:10px;
+      font-size:13px;
+      color:rgba(15,15,15,.75);
+    }
+    .pill{
+      background:#fff;
+      border:1px solid rgba(198,62,119,.25);
+      border-radius:999px;
+      padding:6px 10px;
+    }
+
+    .type{
+      font-size:18px;
+      line-height:1.65;
+      color:var(--black);
+      white-space:pre-wrap;
+      min-height:92px;
+    }
+
+    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+    button{
+      appearance:none;
+      border:0;
+      border-radius:14px;
+      padding:12px 14px;
+      font-size:15px;
+      cursor:pointer;
+      transition: transform .08s ease, filter .2s ease;
+    }
+    button:active{transform:translateY(1px)}
+    .btn{
+      background:var(--pink);
+      color:#fff;
+    }
+    .btn2{
+      background:#fff;
+      color:var(--black);
+      border:1px solid rgba(0,0,0,.12);
+    }
+    .btn3{
+      background:#111;
+      color:#fff;
+    }
+    .muted{opacity:.78}
+
+    /* lock screen */
+    .lock{
+      display:grid;
+      gap:10px;
+      padding:14px;
+      border-radius:18px;
+      border:1px solid rgba(198,62,119,.25);
+      background:#fff;
+    }
+    input{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.14);
+      font-size:15px;
+      outline:none;
+    }
+    input:focus{border-color:rgba(198,62,119,.65); box-shadow:0 0 0 4px rgba(198,62,119,.10)}
+
+    /* floating hearts (not background image) */
+    .float-heart{
+      position:fixed;
+      left:var(--x);
+      top:110vh;
+      font-size:16px;
+      color:rgba(198,62,119,.55);
+      animation: rise var(--d) linear forwards;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.05));
+      pointer-events:none;
+      z-index:0;
+    }
+    @keyframes rise{
+      to{
+        transform: translateY(calc(-130vh)) translateX(var(--dx)) rotate(var(--r));
+        opacity:0;
+      }
+    }
+
+    /* confetti squares */
+    .confetti{
+      position:fixed;
+      left:var(--x);
+      top:-12px;
+      width:8px; height:8px;
+      background:var(--c);
+      transform:rotate(var(--r));
+      opacity:.95;
+      border-radius:2px;
+      animation: fall 900ms linear forwards;
+      pointer-events:none;
+      z-index:9999;
+    }
+    @keyframes fall{
+      to{ transform: translateY(110vh) rotate(calc(var(--r) + 180deg)); opacity:0;}
+    }
+
+    .hidden{display:none}
+    .center{ text-align:center }
+    .bigQ{
+      font-size:24px;
+      color:var(--pink);
+      font-weight:800;
+      margin:10px 0 4px;
+    }
+    .note{
+      font-size:13px;
+      color:rgba(15,15,15,.75);
+      line-height:1.55;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="topbar">
+        <span class="badge"><span class="heart">♥</span> Private page • for <span id="herBadge"></span></span>
+      </div>
+
+      <div class="content">
+        <h1 id="title"></h1>
+        <p class="sub" id="subtitle"></p>
+        <div class="divider"></div>
+
+        <!-- LOCK -->
+        <div id="lockBox" class="lock">
+          <div class="muted">This page is only for you. Enter the secret code.</div>
+          <input id="code" placeholder="Secret code…" autocomplete="off" />
+          <button class="btn" id="unlock">Unlock</button>
+          <div id="lockMsg" class="note"></div>
+        </div>
+
+        <!-- EXPERIENCE -->
+        <div id="experience" class="hidden">
+          <div class="panel">
+            <div class="type" id="type"></div>
+
+            <div class="row">
+              <span class="pill" id="yourTime"></span>
+              <span class="pill" id="myTime"></span>
+              <span class="pill" id="countdown"></span>
+            </div>
+
+            <div class="actions">
+              <button class="btn2" id="back">← Back</button>
+              <button class="btn" id="next">Next →</button>
+              <button class="btn3" id="skip">Skip to the question</button>
+            </div>
+          </div>
+
+          <div id="question" class="hidden center" style="margin-top:16px;">
+            <div class="bigQ" id="qText"></div>
+            <div class="note" id="qNote"></div>
+            <div class="actions" style="justify-content:center;">
+              <button class="btn" id="yes">Yes 💗</button>
+              <button class="btn2" id="no">Not yet</button>
+            </div>
+
+            <div id="afterYes" class="hidden" style="margin-top:12px;">
+              <div class="panel">
+                <div class="bigQ">You just made my day.</div>
+                <p class="note">
+                  I’m calling you right now (or tap the button).  
+                  <br/>I can’t wait to celebrate this with you.
+                </p>
+                <div class="actions" style="justify-content:center;">
+                  <a id="callBtn" class="btn" style="text-decoration:none; display:inline-block; border-radius:14px; padding:12px 14px;" href="#" target="_blank" rel="noopener">Open our call</a>
+                </div>
+              </div>
+            </div>
+
+            <div id="afterNo" class="hidden" style="margin-top:12px;">
+              <div class="panel">
+                <div class="bigQ" style="font-size:18px;">No pressure. Always respect.</div>
+                <p class="note">
+                  I just wanted to ask in a sweet way.  
+                  You matter to me either way. 💗
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ====== PERSONALIZE ======
+  const HER_NAME   = "Hannah";          // <-- change if needed
+  const SECRET_CODE = "24 janvier 2025";         // <-- choose a secret code only she knows
+  const CALL_LINK  = "https://meet.google.com/"; // <-- put your FaceTime/Zoom/Meet link or leave as is
+  // ===============================
+
+  // Romantic chapters (keep it short, powerful)
+  const chapters = [
+    `Hey ${HER_NAME}.\n\nThis page is only for you.\nI wanted something simple… but unforgettable.`,
+    `Dec 1, 2025 → Feb 1, 2026.\n\nWhen you read it fast, it looks like a whole year.\nBut it’s just two months.\nAnd somehow… it already feels meaningful.`,
+    `I’ve been through a lot.\nAnd then you came at a moment when my hope needed color.\n\nThank you for being you.`,
+    `What I love about you:\n• your softness\n• your light\n• your humility\n• the way you make things feel real\n\nYou’ve left your mark, gently.`,
+    `So here’s my question.\nNo pressure.\nJust my heart, choosing you.`
+  ];
+
+  const title = document.getElementById("title");
+  const subtitle = document.getElementById("subtitle");
+  const herBadge = document.getElementById("herBadge");
+  herBadge.textContent = HER_NAME;
+
+  title.textContent = `${HER_NAME} 🌸`;
+  subtitle.textContent = "A private little chapter — made with love.";
+
+  // noindex already added, still: keep repo name random if public
+
+  // time pills
+  function fmtTime(tz){
+    return new Intl.DateTimeFormat("en-US", { dateStyle:"medium", timeStyle:"short", timeZone: tz }).format(new Date());
+  }
+  function updateTimes(){
+    const viewerTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    document.getElementById("yourTime").textContent = `Your time: ${fmtTime(viewerTZ)}`;
+    document.getElementById("myTime").textContent = `My time (Montreal): ${fmtTime("America/Montreal")}`;
+  }
+
+  // Countdown to Feb 14 (Valentine’s Day)
+  function updateCountdown(){
+    const target = new Date("2026-02-14T00:00:00");
+    const now = new Date();
+    const diff = target - now;
+    if(diff <= 0){
+      document.getElementById("countdown").textContent = "It’s Valentine’s Day 💗";
+      return;
+    }
+    const days = Math.floor(diff / (1000*60*60*24));
+    document.getElementById("countdown").textContent = `${days} day(s) until Feb 14 💗`;
+  }
+  updateTimes(); updateCountdown();
+  setInterval(()=>{ updateTimes(); updateCountdown(); }, 30000);
+
+  // Lock logic
+  const lockBox = document.getElementById("lockBox");
+  const exp = document.getElementById("experience");
+  const codeInput = document.getElementById("code");
+  const lockMsg = document.getElementById("lockMsg");
+
+  function unlock(){
+    const v = (codeInput.value || "").trim();
+    if(v === SECRET_CODE){
+      localStorage.setItem("valentine_unlocked", "yes");
+      lockBox.classList.add("hidden");
+      exp.classList.remove("hidden");
+      start();
+    }else{
+      lockMsg.textContent = "Almost… try the code only we would know 🙂";
+      lockMsg.style.color = "#c63e77";
+    }
+  }
+  document.getElementById("unlock").addEventListener("click", unlock);
+  codeInput.addEventListener("keydown", (e)=>{ if(e.key==="Enter") unlock(); });
+
+  if(localStorage.getItem("valentine_unlocked")==="yes"){
+    lockBox.classList.add("hidden");
+    exp.classList.remove("hidden");
+    start();
+  }
+
+  // Typewriter
+  const typeEl = document.getElementById("type");
+  let page = 0, typing = false, tmr = null;
+
+  function typeText(text){
+    typing = true;
+    typeEl.textContent = "";
+    let i=0;
+    clearInterval(tmr);
+    tmr = setInterval(()=>{
+      typeEl.textContent += text[i++] || "";
+      if(i > text.length){
+        clearInterval(tmr);
+        typing = false;
+      }
+    }, 18);
+  }
+
+  // Floating hearts
+  function floatHearts(){
+    const h = document.createElement("div");
+    h.className = "float-heart";
+    const heart = Math.random() > .5 ? "♥" : "❤";
+    h.textContent = heart;
+    h.style.setProperty("--x", `${Math.random()*100}vw`);
+    h.style.setProperty("--d", `${6000 + Math.random()*4500}ms`);
+    h.style.setProperty("--dx", `${(Math.random()*120-60)}px`);
+    h.style.setProperty("--r", `${(Math.random()*90-45)}deg`);
+    h.style.fontSize = `${12 + Math.random()*14}px`;
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(), 11000);
+  }
+
+  let heartsTimer = null;
+  function start(){
+    page = 0;
+    typeText(chapters[page]);
+    if(!heartsTimer){
+      heartsTimer = setInterval(floatHearts, 900);
+    }
+  }
+
+  // navigation
+  document.getElementById("next").addEventListener("click", ()=>{
+    if(typing){ clearInterval(tmr); typing=false; typeEl.textContent = chapters[page]; return; }
+    if(page < chapters.length-1){
+      page++;
+      typeText(chapters[page]);
+    }else{
+      showQuestion();
+    }
+  });
+  document.getElementById("back").addEventListener("click", ()=>{
+    if(page>0){ page--; typeText(chapters[page]); }
+  });
+  document.getElementById("skip").addEventListener("click", showQuestion);
+
+  // Question reveal
+  const q = document.getElementById("question");
+  function showQuestion(){
+    q.classList.remove("hidden");
+    document.getElementById("qText").textContent = `${HER_NAME}, will you be my Valentine?`;
+    document.getElementById("qNote").textContent =
+      "No pressure. Just something sweet, made only for you.";
+    q.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+
+  // Confetti
+  function confetti(){
+    for(let k=0;k<120;k++){
+      const c = document.createElement("div");
+      c.className = "confetti";
+      c.style.setProperty("--x", `${Math.random()*100}vw`);
+      c.style.setProperty("--r", `${Math.random()*360}deg`);
+      c.style.setProperty("--c", Math.random()>.5 ? "#c63e77" : "#111");
+      c.style.left = `calc(${Math.random()*100}vw)`;
+      c.style.animationDuration = `${700 + Math.random()*900}ms`;
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(), 1600);
+    }
+  }
+
+  document.getElementById("callBtn").href = CALL_LINK;
+
+  document.getElementById("yes").addEventListener("click", ()=>{
+    confetti();
+    document.getElementById("afterYes").classList.remove("hidden");
+    document.getElementById("afterNo").classList.add("hidden");
+  });
+
+  document.getElementById("no").addEventListener("click", ()=>{
+    document.getElementById("afterNo").classList.remove("hidden");
+    document.getElementById("afterYes").classList.add("hidden");
+  });
+</script>
+</body>
+</html>
